@@ -2,6 +2,7 @@ from django.shortcuts import redirect, render
 from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
+from .models import *
 # Create your views here.
 
 def index(request):
@@ -53,7 +54,10 @@ def user_login(request):
         user = authenticate(username = username, password = password)
         if user:
             login(request,user)
-        return redirect('/')
+            login_user = username
+            d_user = Signup.objects.get(user__username = login_user)
+            context = {'d_user':d_user, 'user':user}
+        return render(request, 'index.html', context)
 
     return render(request, 'login.html')
 
@@ -61,6 +65,4 @@ def user_logout(request):
     logout(request)
     return redirect('/')
 
-def user_profile(request):
-    userprofile = Signup.objects.all()
-    return render(request, 'base.html', context={'userprofile':userprofile})
+

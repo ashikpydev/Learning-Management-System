@@ -11,7 +11,6 @@ urlpatterns = [
     path('signup', sign_up, name = 'sign_up'),
     path('login', user_login, name='user_login'),
     path('logout',user_logout, name = 'logout'),
-    path('userprofile', user_profile, name = 'userprofile'),
 
     
 ]
