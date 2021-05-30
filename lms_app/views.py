@@ -24,7 +24,9 @@ def courses(request):
     return render(request, 'courses.html')
 
 def teacher(request):
-    return render(request, 'teacher.html')
+    teacher = Teacher.objects.all()
+    context = {'teacher':teacher}
+    return render(request, 'teacher.html', context)
 
 def blog_single(request):
     return render(request, 'blog-single.html')

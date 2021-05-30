@@ -27,7 +27,6 @@ class CourseAuthor(models.Model):
         return str(self.user)
 
 class Courses(models.Model):
-    overview_of_section = models.CharField(max_length=100)
     course_image = models.ImageField(blank = True, null = True)
     course_name = models.CharField(max_length=100)
     course_detail = models.CharField(max_length=200)
@@ -37,7 +36,9 @@ class Courses(models.Model):
 
 
 class Teacher(models.Model):
-    teacher = models.ForeignKey(CourseAuthor,on_delete=models.CASCADE)
+    name = models.CharField(max_length=50)
+    teacher_image = models.ImageField(upload_to="teacher_pics")
+    # teacher = models.ForeignKey(CourseAuthor,on_delete=models.CASCADE)
     designation = models.CharField(max_length=50)
     description = models.TextField()
 
