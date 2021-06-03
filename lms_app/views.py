@@ -21,7 +21,9 @@ def blog(request):
     return render(request, 'blog.html')
 
 def courses(request):
-    return render(request, 'courses.html')
+    all_courses=Courses.objects.all()
+    context={'all_courses':all_courses}
+    return render(request, 'courses.html', context)
 
 def teacher(request):
     teacher = Teacher.objects.all()
