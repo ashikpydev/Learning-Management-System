@@ -394,7 +394,7 @@ mark,
 
 .img-fluid {
   max-width: 100%;
-  height: auto; }
+  height: 400px; }
 
 .img-thumbnail {
   padding: 0.25rem;
@@ -8940,15 +8940,13 @@ h1, h2, h3, h4, h5,
 
 .blog-entry .meta-date {
   display: inline-block;
-  background: #5d50c6; }
+  background: #299d46a3; }
   .blog-entry .meta-date span {
     display: block;
     color: #fff; }
   .blog-entry .meta-date .day {
     font-weight: 700;
-    font-size: 20px; }
-  .blog-entry .meta-date .mos, .blog-entry .meta-date .yr {
-    font-size: 13px; }
+}
 
 .blog-entry .meta > div {
   display: block;

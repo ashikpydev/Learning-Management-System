@@ -25,8 +25,8 @@
 						<div class="text pt-4">
 							<p class="meta d-flex">
 								<span><i class="icon-user mr-2"></i>{{ course.author }}</span>
-								<span><i class="icon-table mr-2"></i>10 seats</span>
-								<span><i class="icon-calendar mr-2"></i>4 Years</span>
+								<span><i class="icon-table mr-2"></i>{{course.available_seat}}</span>
+								<span><i class="icon-calendar mr-2"></i>{{course.publish_date}}</span>
 							</p>
 							<h3><a href="#">{{ course.course_name }}</a></h3>
 							<p>{{course.course_detail}}</p>

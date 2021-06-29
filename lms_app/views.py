@@ -1,8 +1,17 @@
+from django.http.response import HttpResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render
+from django.urls import reverse, reverse_lazy
 from .models import *
 from django.contrib.auth.models import User
 from django.contrib.auth import login, logout, authenticate
 from .models import *
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import CreateView, ListView, UpdateView, DetailView, View, TemplateView, DeleteView
+import uuid
+from .forms import *
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+
 # Create your views here.
 
 def index(request):
@@ -17,8 +26,6 @@ def about(request):
 def contact(request):
     return render(request, 'contact.html')
 
-def blog(request):
-    return render(request, 'blog.html')
 
 def courses(request):
     all_courses=Courses.objects.all()
@@ -30,8 +37,6 @@ def teacher(request):
     context = {'teacher':teacher}
     return render(request, 'teacher.html', context)
 
-def blog_single(request):
-    return render(request, 'blog-single.html')
 
 def sign_up(request):
     if request.method == 'POST':
@@ -70,3 +75,112 @@ def user_logout(request):
     return redirect('/')
 
 
+class CreateBlog(LoginRequiredMixin, CreateView):
+    login_url = '/login'
+    redirect_field_name = 'login'
+    template_name = 'create_blog.html'
+    model = Blog
+    fields = ('blog_title', 'blog_content', 'blog_image',)
+
+    def form_valid(self, form):
+        blog_obj = form.save(commit=False)
+        blog_obj.author = self.request.user
+        title = blog_obj.blog_title
+        blog_obj.slug = title.replace(" ", "-") + "-" + str(uuid.uuid4())
+        blog_obj.save()
+        return redirect('/blog')
+
+class Bloglist(ListView):
+    context_object_name = 'blog'
+    model = Blog
+    template_name = 'blog.html'
+
+
+def blog_details(request, slug):
+    blog = Blog.objects.get(slug=slug)
+    comment_form = CommentForm()
+    if request.method == 'POST':
+        comment_form = CommentForm(request.POST)
+        if comment_form.is_valid():
+            comment =comment_form.save(commit=False)
+            comment.user = request.user
+            comment.blog = blog
+            comment.save()
+            return HttpResponseRedirect(reverse('blog-detail', kwargs = {'slug':slug}))
+    return render(request, 'blog_details.html', context={'blog':blog, 'comment_form':comment_form})
+
+
+
+
+                            #online test System start
+
+
+class QuizListView(ListView):
+    model = Quiz 
+    template_name = 'take-test.html'
+
+@login_required(login_url='/login')
+def quiz_view(request, pk):
+    quiz = Quiz.objects.get(pk=pk)
+    return render(request, 'quiz.html', {'obj': quiz})
+
+def quiz_data_view(request, pk):
+    quiz = Quiz.objects.get(pk=pk)
+    questions = []
+    for q in quiz.get_questions():
+        answers = []
+        for a in q.get_answers():
+            answers.append(a.text)
+        questions.append({str(q): answers})
+    return JsonResponse({
+        'data': questions,
+        'time': quiz.time,
+    })
+
+def save_quiz_view(request, pk):
+    if request.is_ajax():
+        questions = []
+        data = request.POST
+        data_ = dict(data.lists())
+
+        data_.pop('csrfmiddlewaretoken')
+
+        for k in data_.keys():
+            print('key: ', k)
+            question = Question.objects.get(text=k)
+            questions.append(question)
+        print(questions)
+
+        user = request.user
+        quiz = Quiz.objects.get(pk=pk)
+
+        score = 0
+        multiplier = 100 / quiz.number_of_questions
+        results = []
+        correct_answer = None
+
+        for q in questions:
+            a_selected = request.POST.get(q.text)
+
+            if a_selected != "":
+                question_answers = Answer.objects.filter(question=q)
+                for a in question_answers:
+                    if a_selected == a.text:
+                        if a.correct:
+                            score += 1
+                            correct_answer = a.text
+                    else:
+                        if a.correct:
+                            correct_answer = a.text
+
+                results.append({str(q): {'correct_answer': correct_answer, 'answered': a_selected}})
+            else:
+                results.append({str(q): 'not answered'})
+            
+        score_ = score * multiplier
+        Result.objects.create(quiz=quiz, user=user, score=score_)
+
+        if score_ >= quiz.required_score_to_pass:
+            return JsonResponse({'passed': True, 'score': score_, 'results': results})
+        else:
+            return JsonResponse({'passed': False, 'score': score_, 'results': results})
